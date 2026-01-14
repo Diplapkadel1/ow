@@ -2,84 +2,138 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DiplapSite Whiteboard Sync</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiplapShort | URL Analytics</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root { --bg: #121212; --panel: #1e1e1e; --accent: #00ff00; --text: #e0e0e0; --border: #333; }
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; height: 100vh; overflow: hidden; }
+        :root { --bg: #0a0a0a; --panel: #141414; --accent: #00ff00; --text: #ffffff; --border: #222; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; margin-top: 50px; }
         
-        #canvas-container { position: fixed; inset: 0; z-index: 1; touch-action: none; }
-        canvas { display: block; background: var(--bg); cursor: crosshair; }
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { font-size: 2rem; letter-spacing: -1px; }
+        header span { color: var(--accent); }
 
-        .ui-layer { position: fixed; inset: 0; pointer-events: none; z-index: 10; padding: 15px; }
-        .ui-layer > * { pointer-events: auto; }
+        .main-card { background: var(--panel); border: 1px solid var(--border); padding: 25px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        
+        .field { margin-bottom: 15px; }
+        label { display: block; font-size: 0.8rem; color: #666; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 1rem; }
+        input:focus { border-color: var(--accent); outline: none; }
 
-        .toolbar {
-            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
-            background: var(--panel); border: 1px solid var(--border);
-            padding: 6px; border-radius: 12px; display: flex; gap: 4px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-        }
-        .tool-btn {
-            width: 40px; height: 40px; border: none; background: transparent; color: #fff;
-            border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-        }
-        .tool-btn.active { background: var(--accent); color: #000; }
-        .tool-btn:hover:not(.active) { background: #333; }
+        button { width: 100%; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        button:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
-        .top-left { position: absolute; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .card { background: var(--panel); border: 1px solid var(--border); padding: 10px; border-radius: 10px; }
-        .btn { 
-            background: var(--accent); color: #000; border: none; padding: 8px 15px; 
-            border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;
-        }
-
-        .status-dot { width: 8px; height: 8px; background: #555; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .status-online { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
-
-        /* Modal */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: flex; align-items: center; justify-content: center; }
-        .modal { background: var(--panel); padding: 30px; border-radius: 15px; text-align: center; border: 1px solid var(--accent); width: 300px; }
-        input { width: 100%; padding: 10px; margin: 15px 0; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; text-align: center; }
+        .result { margin-top: 20px; padding: 15px; background: #000; border-radius: 8px; border: 1px dashed var(--accent); display: none; align-items: center; justify-content: space-between; }
+        
+        .stats-area { margin-top: 40px; }
+        .stat-row { background: var(--panel); border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .stat-info div { font-size: 0.9rem; font-weight: bold; color: var(--accent); }
+        .stat-info span { font-size: 0.7rem; color: #555; display: block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .click-badge { background: #222; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-family: monospace; }
     </style>
 </head>
 <body>
 
-    <div id="canvas-container"><canvas id="board"></canvas></div>
+    <div class="container">
+        <header>
+            <h1>Diplap<span>Short</span></h1>
+            <p style="color:#444">Secure URL Management</p>
+        </header>
 
-    <div class="ui-layer">
-        <div class="top-left">
-            <div class="card">
-                <h2 style="font-size: 1rem;">DiplapSite <span>Whiteboard</span></h2>
-                <p id="user-display" style="font-size: 0.7rem; color: #888; margin-top: 5px;"></p>
+        <div class="main-card">
+            <div class="field">
+                <label>Long URL</label>
+                <input type="url" id="longUrl" placeholder="https://very-long-link.com/path/to/something">
             </div>
-            <button id="btn-create" class="btn"><i data-lucide="plus"></i> New Room</button>
-            <button id="btn-share" class="btn" style="display:none; background: #222; color: #fff; border: 1px solid #444;"><i data-lucide="share"></i> Share Room</button>
+            <div class="field">
+                <label>Custom Slug (Optional)</label>
+                <input type="text" id="customCode" placeholder="e.g. portfolio">
+            </div>
+            <button id="btn-shorten"><i data-lucide="link"></i> Shorten Link</button>
+
+            <div id="result-box" class="result">
+                <code id="short-url-display" style="color:var(--accent)"></code>
+                <i data-lucide="copy" id="btn-copy" style="cursor:pointer; width:18px"></i>
+            </div>
         </div>
 
-        <nav class="toolbar">
-            <button class="tool-btn active" data-tool="selection"><i data-lucide="mouse-pointer-2"></i></button>
-            <button class="tool-btn" data-tool="pen"><i data-lucide="pencil"></i></button>
-            <button class="tool-btn" data-tool="rect"><i data-lucide="square"></i></button>
-            <button class="tool-btn" data-tool="ellipse"><i data-lucide="circle"></i></button>
-            <button class="tool-btn" data-tool="text"><i data-lucide="type"></i></button>
-        </nav>
-
-        <div style="position:absolute; bottom:20px; right:20px; font-size: 10px; color: #666;">
-            <span id="sync-dot" class="status-dot"></span> <span id="sync-text">Offline</span>
-        </div>
-    </div>
-
-    <div id="name-overlay" class="overlay">
-        <div class="modal">
-            <h3>Enter Your Name</h3>
-            <input type="text" id="user-name" placeholder="E.g. Alex" maxlength="15">
-            <button id="btn-start" class="btn" style="width:100%; justify-content: center;">Enter Board</button>
+        <div class="stats-area">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="font-size:0.9rem; color:#666">ANALYTICS</h3>
+                <i data-lucide="refresh-cw" id="refresh-btn" style="width:16px; cursor:pointer; color:#444"></i>
+            </div>
+            <div id="stats-container">
+                <!-- Links will appear here -->
+            </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
-    <script>lucide.createIcons();</script>
+    <script>
+        // --- CONFIGURATION ---
+        const WORKER_URL = "https://ow.diplapkadel.workers.dev";
+
+        async function shortenLink() {
+            const longUrl = document.getElementById('longUrl').value;
+            const customCode = document.getElementById('customCode').value;
+
+            if(!longUrl) return alert("Enter a URL");
+
+            const btn = document.getElementById('btn-shorten');
+            btn.innerText = "Processing...";
+
+            try {
+                const res = await fetch(`${WORKER_URL}/api-shorten`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ longUrl, customCode })
+                });
+                const data = await res.json();
+                
+                const finalUrl = `${WORKER_URL}/${data.shortCode}`;
+                document.getElementById('short-url-display').innerText = finalUrl;
+                document.getElementById('result-box').style.display = 'flex';
+                
+                btn.innerHTML = '<i data-lucide="check"></i> Created!';
+                setTimeout(() => { btn.innerHTML = '<i data-lucide="link"></i> Shorten Link'; lucide.createIcons(); }, 2000);
+                
+                fetchStats();
+            } catch(e) { alert("Error connecting to backend"); }
+        }
+
+        async function fetchStats() {
+            const container = document.getElementById('stats-container');
+            try {
+                const res = await fetch(`${WORKER_URL}/api-list`);
+                const data = await res.json();
+                container.innerHTML = "";
+
+                data.forEach(item => {
+                    container.innerHTML += `
+                        <div class="stat-row">
+                            <div class="stat-info">
+                                <div>/${item.code}</div>
+                                <span>${item.target}</span>
+                            </div>
+                            <div class="click-badge">${item.clicks} clicks</div>
+                        </div>
+                    `;
+                });
+            } catch(e) { container.innerHTML = "<p style='color:#333'>No links found yet.</p>"; }
+        }
+
+        // Setup
+        document.getElementById('btn-shorten').onclick = shortenLink;
+        document.getElementById('refresh-btn').onclick = fetchStats;
+        document.getElementById('btn-copy').onclick = () => {
+            const text = document.getElementById('short-url-display').innerText;
+            navigator.clipboard.writeText(text);
+            alert("Copied!");
+        };
+
+        lucide.createIcons();
+        fetchStats();
+    </script>
 </body>
 </html>
