@@ -3,85 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DiplapShort | URL Analytics</title>
+    <title>DiplapShort | Premium URL Analytics</title>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0a0a0a; --panel: #141414; --accent: #00ff00; --text: #ffffff; --border: #222; }
+        :root {
+            --bg: #050505;
+            --card: #0f0f0f;
+            --accent: #00ff00;
+            --accent-glow: rgba(0, 255, 0, 0.2);
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --border: #1a1a1a;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 500px; margin-top: 50px; }
         
-        header { text-align: center; margin-bottom: 30px; }
-        header h1 { font-size: 2rem; letter-spacing: -1px; }
-        header span { color: var(--accent); }
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
 
-        .main-card { background: var(--panel); border: 1px solid var(--border); padding: 25px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        
-        .field { margin-bottom: 15px; }
-        label { display: block; font-size: 0.8rem; color: #666; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
-        input { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 1rem; }
-        input:focus { border-color: var(--accent); outline: none; }
+        .wrapper { width: 100%; max-width: 550px; }
 
-        button { width: 100%; padding: 12px; background: var(--accent); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        /* Header Redesign */
+        header { text-align: center; margin-bottom: 50px; }
+        header h1 { 
+            font-size: 2.5rem; 
+            font-weight: 800; 
+            letter-spacing: -2px; 
+            margin-bottom: 10px;
+        }
+        header h1 span { color: var(--accent); text-shadow: 0 0 20px var(--accent-glow); }
+        header p { color: var(--text-dim); font-size: 0.95rem; }
 
-        .result { margin-top: 20px; padding: 15px; background: #000; border-radius: 8px; border: 1px dashed var(--accent); display: none; align-items: center; justify-content: space-between; }
-        
-        .stats-area { margin-top: 40px; }
-        .stat-row { background: var(--panel); border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .stat-info div { font-size: 0.9rem; font-weight: bold; color: var(--accent); }
-        .stat-info span { font-size: 0.7rem; color: #555; display: block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .click-badge { background: #222; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-family: monospace; }
+        /* Main Glass Card */
+        .main-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .input-box { margin-bottom: 24px; position: relative; }
+        .input-box label { 
+            display: block; 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            color: var(--accent); 
+            margin-bottom: 8px; 
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+            outline: none;
+        }
+
+        button#btn-shorten {
+            width: 100%;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button#btn-shorten:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--accent-glow);
+        }
+
+        /* Result Area */
+        .result-container {
+            margin-top: 24px;
+            background: #000;
+            border: 1px dashed var(--accent);
+            border-radius: 14px;
+            padding: 15px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .result-container code {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .icon-btn {
+            background: #1a1a1a;
+            color: #fff;
+            border: none;
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: 0.2s;
+        }
+        .icon-btn:hover { background: var(--accent); color: #000; }
+
+        /* Analytics Section */
+        .analytics { margin-top: 50px; }
+        .analytics-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+        .analytics-head h2 { font-size: 0.8rem; letter-spacing: 2px; color: var(--text-dim); }
+
+        .link-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+        .link-card:hover { border-color: #333; background: #141414; }
+
+        .link-info div { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-weight: bold; margin-bottom: 4px; }
+        .link-info span { font-size: 0.75rem; color: var(--text-dim); display: block; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .click-stat { text-align: right; }
+        .click-count { font-size: 1.2rem; font-weight: 800; color: #fff; }
+        .click-label { font-size: 0.6rem; text-transform: uppercase; color: var(--text-dim); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="wrapper">
         <header>
             <h1>Diplap<span>Short</span></h1>
-            <p style="color:#444">Secure URL Management</p>
+            <p>High-performance link management & real-time analytics.</p>
         </header>
 
         <div class="main-card">
-            <div class="field">
-                <label>Long URL</label>
-                <input type="url" id="longUrl" placeholder="https://very-long-link.com/path/to/something">
+            <div class="input-box">
+                <label>Target URL</label>
+                <input type="url" id="longUrl" placeholder="https://github.com/diplapkadel/project-alpha-v1">
             </div>
-            <div class="field">
+
+            <div class="input-box">
                 <label>Custom Slug (Optional)</label>
-                <input type="text" id="customCode" placeholder="e.g. portfolio">
+                <input type="text" id="customCode" placeholder="e.g. bio-link">
             </div>
-            <button id="btn-shorten"><i data-lucide="link"></i> Shorten Link</button>
 
-            <div id="result-box" class="result">
-                <code id="short-url-display" style="color:var(--accent)"></code>
-                <i data-lucide="copy" id="btn-copy" style="cursor:pointer; width:18px"></i>
+            <button id="btn-shorten">
+                <i data-lucide="link"></i> Create Short Link
+            </button>
+
+            <div id="result-area" class="result-container">
+                <code id="display-url"></code>
+                <button class="icon-btn" id="copy-action" title="Copy to clipboard">
+                    <i data-lucide="copy" style="width: 18px;"></i>
+                </button>
             </div>
         </div>
 
-        <div class="stats-area">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="font-size:0.9rem; color:#666">ANALYTICS</h3>
-                <i data-lucide="refresh-cw" id="refresh-btn" style="width:16px; cursor:pointer; color:#444"></i>
+        <section class="analytics">
+            <div class="analytics-head">
+                <h2>MY ANALYTICS</h2>
+                <button class="icon-btn" id="refresh-data" style="width: 32px; height: 32px;">
+                    <i data-lucide="refresh-cw" style="width: 14px;"></i>
+                </button>
             </div>
-            <div id="stats-container">
-                <!-- Links will appear here -->
+            <div id="links-list">
+                <!-- Links injected here -->
             </div>
-        </div>
+        </section>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
+        // CONFIG - Put your Cloudflare Worker URL here
         const WORKER_URL = "https://ow.diplapkadel.workers.dev";
 
-        async function shortenLink() {
+        async function createLink() {
             const longUrl = document.getElementById('longUrl').value;
             const customCode = document.getElementById('customCode').value;
 
-            if(!longUrl) return alert("Enter a URL");
+            if (!longUrl) return alert("Please enter a destination URL");
 
             const btn = document.getElementById('btn-shorten');
-            btn.innerText = "Processing...";
+            btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Creating...';
+            lucide.createIcons();
 
             try {
                 const res = await fetch(`${WORKER_URL}/api-shorten`, {
@@ -89,51 +249,87 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ longUrl, customCode })
                 });
+                
                 const data = await res.json();
+                const shortUrl = `${WORKER_URL}/${data.shortCode}`;
+
+                document.getElementById('display-url').innerText = shortUrl;
+                document.getElementById('result-area').style.display = 'flex';
                 
-                const finalUrl = `${WORKER_URL}/${data.shortCode}`;
-                document.getElementById('short-url-display').innerText = finalUrl;
-                document.getElementById('result-box').style.display = 'flex';
-                
-                btn.innerHTML = '<i data-lucide="check"></i> Created!';
-                setTimeout(() => { btn.innerHTML = '<i data-lucide="link"></i> Shorten Link'; lucide.createIcons(); }, 2000);
-                
-                fetchStats();
-            } catch(e) { alert("Error connecting to backend"); }
+                btn.innerHTML = '<i data-lucide="check"></i> Success!';
+                setTimeout(() => { 
+                    btn.innerHTML = '<i data-lucide="link"></i> Create Short Link'; 
+                    lucide.createIcons();
+                }, 2000);
+
+                fetchLinks();
+            } catch (err) {
+                alert("Worker Connection Failed");
+                btn.innerHTML = '<i data-lucide="link"></i> Create Short Link';
+                lucide.createIcons();
+            }
         }
 
-        async function fetchStats() {
-            const container = document.getElementById('stats-container');
+        async function fetchLinks() {
+            const list = document.getElementById('links-list');
             try {
                 const res = await fetch(`${WORKER_URL}/api-list`);
                 const data = await res.json();
-                container.innerHTML = "";
+                list.innerHTML = "";
 
-                data.forEach(item => {
-                    container.innerHTML += `
-                        <div class="stat-row">
-                            <div class="stat-info">
+                if (data.length === 0) {
+                    list.innerHTML = `<p style="text-align:center; color:#444; margin-top:20px;">No links created yet.</p>`;
+                    return;
+                }
+
+                data.reverse().forEach(item => {
+                    list.innerHTML += `
+                        <div class="link-card">
+                            <div class="link-info">
                                 <div>/${item.code}</div>
                                 <span>${item.target}</span>
                             </div>
-                            <div class="click-badge">${item.clicks} clicks</div>
+                            <div class="click-stat">
+                                <div class="click-count">${item.clicks}</div>
+                                <div class="click-label">Clicks</div>
+                            </div>
                         </div>
                     `;
                 });
-            } catch(e) { container.innerHTML = "<p style='color:#333'>No links found yet.</p>"; }
+            } catch (e) {
+                list.innerHTML = `<p style="text-align:center; color:#444;">Connect your KV Binding to view analytics.</p>`;
+            }
         }
 
-        // Setup
-        document.getElementById('btn-shorten').onclick = shortenLink;
-        document.getElementById('refresh-btn').onclick = fetchStats;
-        document.getElementById('btn-copy').onclick = () => {
-            const text = document.getElementById('short-url-display').innerText;
-            navigator.clipboard.writeText(text);
-            alert("Copied!");
+        // FIXED COPY BUTTON LOGIC
+        document.getElementById('copy-action').onclick = function() {
+            const textToCopy = document.getElementById('display-url').innerText;
+            
+            // Standard modern clipboard API
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const iconBtn = this;
+                iconBtn.innerHTML = '<i data-lucide="check" style="width: 18px;"></i>';
+                iconBtn.style.background = '#00ff00';
+                iconBtn.style.color = '#000';
+                lucide.createIcons();
+                
+                setTimeout(() => {
+                    iconBtn.innerHTML = '<i data-lucide="copy" style="width: 18px;"></i>';
+                    iconBtn.style.background = '#1a1a1a';
+                    iconBtn.style.color = '#fff';
+                    lucide.createIcons();
+                }, 2000);
+            }).catch(err => {
+                console.error("Copy failed", err);
+            });
         };
 
+        document.getElementById('btn-shorten').onclick = createLink;
+        document.getElementById('refresh-data').onclick = fetchLinks;
+
+        // Initialize
         lucide.createIcons();
-        fetchStats();
+        fetchLinks();
     </script>
 </body>
 </html>
