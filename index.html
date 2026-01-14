@@ -3,153 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DiplapSite Whiteboard Pro</title>
+    <title>DiplapSite Whiteboard Sync</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root {
-            --bg: #121212;
-            --panel: #1e1e1e;
-            --accent: #00ff00;
-            --text: #e0e0e0;
-            --border: #333;
-            --shadow: 0 8px 32px rgba(0,0,0,0.5);
-        }
-
+        :root { --bg: #121212; --panel: #1e1e1e; --accent: #00ff00; --text: #e0e0e0; --border: #333; }
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            height: 100vh; width: 100vw; overflow: hidden;
-        }
-
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; height: 100vh; overflow: hidden; }
+        
         #canvas-container { position: fixed; inset: 0; z-index: 1; touch-action: none; }
-        canvas { display: block; background: var(--bg); }
+        canvas { display: block; background: var(--bg); cursor: crosshair; }
 
-        /* Floating UI Interface */
         .ui-layer { position: fixed; inset: 0; pointer-events: none; z-index: 10; padding: 15px; }
         .ui-layer > * { pointer-events: auto; }
 
-        /* Top Bar */
-        .top-bar { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: flex-start; }
-        
-        .brand-card {
-            background: var(--panel); border: 1px solid var(--border);
-            padding: 10px 18px; border-radius: 12px; box-shadow: var(--shadow);
-        }
-        .brand-card h1 { font-size: 1.1rem; font-weight: 700; }
-        .brand-card span { color: var(--accent); font-weight: 300; }
-
-        .room-controls { display: flex; gap: 10px; }
-        .btn {
-            background: var(--panel); border: 1px solid var(--border); color: var(--text);
-            padding: 10px 16px; border-radius: 10px; cursor: pointer; display: flex;
-            align-items: center; gap: 8px; font-weight: 600; transition: 0.2s;
-        }
-        .btn:hover { background: #2a2a2a; border-color: var(--accent); }
-        .btn-primary { background: rgba(0, 255, 0, 0.1); border-color: var(--accent); color: var(--accent); }
-        .btn-primary:hover { background: var(--accent); color: #000; }
-
-        /* Toolbar (Excalidraw Style) */
         .toolbar {
             position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
             background: var(--panel); border: 1px solid var(--border);
-            padding: 6px; border-radius: 14px; display: flex; gap: 4px; box-shadow: var(--shadow);
+            padding: 6px; border-radius: 12px; display: flex; gap: 4px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
         }
         .tool-btn {
-            width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
-            border-radius: 10px; border: none; background: transparent; color: var(--text);
-            cursor: pointer; position: relative;
+            width: 40px; height: 40px; border: none; background: transparent; color: #fff;
+            border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
-        .tool-btn:hover { background: #2a2a2a; }
         .tool-btn.active { background: var(--accent); color: #000; }
-        .tool-btn span { position: absolute; bottom: 2px; font-size: 8px; font-weight: bold; }
+        .tool-btn:hover:not(.active) { background: #333; }
 
-        /* Bottom Panels */
-        .bottom-left { position: absolute; bottom: 15px; left: 15px; display: flex; gap: 10px; }
-        .bottom-right { position: absolute; bottom: 15px; right: 15px; display: flex; gap: 10px; align-items: center;}
+        .top-left { position: absolute; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .card { background: var(--panel); border: 1px solid var(--border); padding: 10px; border-radius: 10px; }
+        .btn { 
+            background: var(--accent); color: #000; border: none; padding: 8px 15px; 
+            border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;
+        }
 
-        /* Name/Join Overlay */
-        .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            z-index: 100; display: none; align-items: center; justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-        .modal {
-            background: var(--panel); padding: 30px; border-radius: 20px;
-            border: 1px solid var(--border); width: 90%; max-width: 400px; text-align: center;
-        }
-        input {
-            width: 100%; padding: 12px; background: #000; border: 1px solid var(--border);
-            border-radius: 10px; color: #fff; margin: 20px 0; font-size: 1rem; text-align: center;
-        }
-        input:focus { border-color: var(--accent); outline: none; }
+        .status-dot { width: 8px; height: 8px; background: #555; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .status-online { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
 
-        /* Tooltip style keybind hints */
-        @media (max-width: 768px) {
-            .toolbar { bottom: 20px; top: auto; width: 95%; justify-content: space-between; padding: 8px; }
-            .brand-card { display: none; }
-            .top-bar { justify-content: flex-end; }
-        }
+        /* Modal */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: flex; align-items: center; justify-content: center; }
+        .modal { background: var(--panel); padding: 30px; border-radius: 15px; text-align: center; border: 1px solid var(--accent); width: 300px; }
+        input { width: 100%; padding: 10px; margin: 15px 0; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div id="canvas-container">
-        <canvas id="board"></canvas>
-    </div>
+    <div id="canvas-container"><canvas id="board"></canvas></div>
 
     <div class="ui-layer">
-        <!-- Top Navigation -->
-        <div class="top-bar">
-            <div class="brand-card">
-                <h1>DiplapSite <span>Whiteboard</span></h1>
+        <div class="top-left">
+            <div class="card">
+                <h2 style="font-size: 1rem;">DiplapSite <span>Whiteboard</span></h2>
+                <p id="user-display" style="font-size: 0.7rem; color: #888; margin-top: 5px;"></p>
             </div>
-
-            <div class="room-controls">
-                <button id="btn-create" class="btn btn-primary"><i data-lucide="plus-circle"></i> Create</button>
-                <button id="btn-share" class="btn" style="display:none"><i data-lucide="share-2"></i> Share</button>
-            </div>
+            <button id="btn-create" class="btn"><i data-lucide="plus"></i> New Room</button>
+            <button id="btn-share" class="btn" style="display:none; background: #222; color: #fff; border: 1px solid #444;"><i data-lucide="share"></i> Share Room</button>
         </div>
 
-        <!-- Main Tools -->
         <nav class="toolbar">
-            <button class="tool-btn active" data-tool="selection" title="Selection (V)"><i data-lucide="mouse-pointer-2"></i><span>1</span></button>
-            <button class="tool-btn" data-tool="hand" title="Hand (H)"><i data-lucide="hand"></i><span>2</span></button>
-            <button class="tool-btn" data-tool="pen" title="Pen (P)"><i data-lucide="pencil"></i><span>3</span></button>
-            <button class="tool-btn" data-tool="rect" title="Rectangle (R)"><i data-lucide="square"></i><span>4</span></button>
-            <button class="tool-btn" data-tool="ellipse" title="Ellipse (O)"><i data-lucide="circle"></i><span>5</span></button>
-            <button class="tool-btn" data-tool="arrow" title="Arrow (A)"><i data-lucide="arrow-up-right"></i><span>6</span></button>
-            <button class="tool-btn" data-tool="text" title="Text (T)"><i data-lucide="type"></i><span>7</span></button>
-            <button class="tool-btn" data-tool="code" title="Code (C)"><i data-lucide="code"></i><span>8</span></button>
+            <button class="tool-btn active" data-tool="selection"><i data-lucide="mouse-pointer-2"></i></button>
+            <button class="tool-btn" data-tool="pen"><i data-lucide="pencil"></i></button>
+            <button class="tool-btn" data-tool="rect"><i data-lucide="square"></i></button>
+            <button class="tool-btn" data-tool="ellipse"><i data-lucide="circle"></i></button>
+            <button class="tool-btn" data-tool="text"><i data-lucide="type"></i></button>
         </nav>
 
-        <!-- History -->
-        <div class="bottom-left">
-            <div class="brand-card" style="display: flex; gap: 5px; padding: 5px;">
-                <button class="tool-btn" id="undo-btn"><i data-lucide="undo-2"></i></button>
-                <button class="tool-btn" id="redo-btn"><i data-lucide="redo-2"></i></button>
-                <button class="tool-btn" id="clear-btn"><i data-lucide="trash-2"></i></button>
-            </div>
-        </div>
-
-        <!-- Zoom -->
-        <div class="bottom-right">
-            <div class="brand-card" style="display: flex; align-items: center; gap: 10px; padding: 5px 15px;">
-                <button class="tool-btn" id="zoom-out" style="width:30px"><i data-lucide="minus"></i></button>
-                <span id="zoom-text" style="font-weight: bold; min-width: 45px; text-align: center;">100%</span>
-                <button class="tool-btn" id="zoom-in" style="width:30px"><i data-lucide="plus"></i></button>
-            </div>
+        <div style="position:absolute; bottom:20px; right:20px; font-size: 10px; color: #666;">
+            <span id="sync-dot" class="status-dot"></span> <span id="sync-text">Offline</span>
         </div>
     </div>
 
-    <!-- Modals -->
     <div id="name-overlay" class="overlay">
         <div class="modal">
-            <h2 style="color:var(--accent)">Welcome to DiplapSite</h2>
-            <p>Enter your name to join the whiteboard</p>
-            <input type="text" id="user-name" placeholder="E.g. John Doe" maxlength="20">
-            <button id="btn-join" class="btn btn-primary" style="width: 100%; justify-content: center;">Start Drawing</button>
+            <h3>Enter Your Name</h3>
+            <input type="text" id="user-name" placeholder="E.g. Alex" maxlength="15">
+            <button id="btn-start" class="btn" style="width:100%; justify-content: center;">Enter Board</button>
         </div>
     </div>
 
