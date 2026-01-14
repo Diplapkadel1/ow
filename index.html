@@ -4,53 +4,448 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DiplapSite Whiteboard</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Lucide Icons for professional look -->
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-color: #1e1e1e;
+            --accent-color: #00ff00;
+            --text-color: #ececec;
+            --border-color: #333;
+            --hover-bg: #2a2a2a;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Canvas Backdrop */
+        #canvas-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+        }
+        canvas { display: block; cursor: crosshair; }
+
+        /* Floating UI Layout (Excalidraw Style) */
+        .ui-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; /* Let clicks pass through to canvas */
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .ui-layer > * { pointer-events: auto; }
+
+        /* Top Left: Logo and Room Info */
+        .top-left-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .logo-box {
+            background: var(--panel-color);
+            padding: 10px 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+        .logo-box h1 { font-size: 1.1rem; font-weight: 600; }
+        .logo-box span { color: var(--accent-color); }
+
+        /* Main Floating Toolbar (Center Top) */
+        .main-toolbar {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--panel-color);
+            padding: 6px;
+            border-radius: 12px;
+            display: flex;
+            gap: 4px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        button {
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover { background: var(--hover-bg); color: var(--accent-color); }
+        button.active { background: var(--accent-color); color: #000; }
+
+        .divider { width: 1px; height: 24px; background: var(--border-color); margin: 8px 4px; }
+
+        /* Create Room Button */
+        #btn-create {
+            width: auto;
+            padding: 0 15px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            font-weight: 600;
+            font-size: 0.9rem;
+            gap: 8px;
+        }
+        #btn-create:hover { background: var(--accent-color); color: #000; }
+
+        /* Room Indicator */
+        .room-tag {
+            background: #000;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            border: 1px solid var(--border-color);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Action Buttons (Undo/Clear - Bottom Left) */
+        .action-bar {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            background: var(--panel-color);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        /* Modal Redesign */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: var(--panel-color);
+            padding: 25px;
+            border-radius: 16px;
+            width: 90%; max-width: 500px;
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 0 30px rgba(0,255,0,0.1);
+        }
+        textarea {
+            width: 100%; height: 150px;
+            background: #0a0a0a; color: var(--accent-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 12px;
+            margin: 15px 0; font-family: 'JetBrains Mono', monospace;
+        }
+        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; }
+        .modal-btns button { width: auto; padding: 0 20px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .main-toolbar { bottom: 20px; top: auto; width: 90%; justify-content: space-around; }
+            .top-left-panel { top: 10px; left: 10px; width: calc(100% - 20px); }
+            .action-bar { bottom: 85px; left: 50%; transform: translateX(-50%); }
+        }
+    </style>
 </head>
 <body>
 
-    <header class="toolbar-header">
-        <div class="logo">
-            <h1>DiplapSite <span>Whiteboard</span></h1>
+    <div id="canvas-container">
+        <canvas id="whiteboardCanvas"></canvas>
+    </div>
+
+    <div class="ui-layer">
+        <!-- Top Left: Branding & Logic -->
+        <div class="top-left-panel">
+            <div class="logo-box">
+                <h1>DiplapSite <span>Whiteboard</span></h1>
+            </div>
+            <button id="btn-create"><i data-lucide="plus-circle"></i> Create Room</button>
+            <div id="room-tag" class="room-tag">
+                <i data-lucide="hash" style="width:14px"></i> <span id="display-room-id"></span>
+            </div>
         </div>
-        
-        <nav class="toolbar">
-            <button id="btn-create" title="Create Room" class="special"><i data-lucide="plus-circle"></i> Create Room</button>
-            <div class="divider"></div>
-            <button class="tool active" data-tool="pen" title="Pen"><i data-lucide="pencil"></i></button>
-            <button class="tool" data-tool="rect" title="Rectangle"><i data-lucide="square"></i></button>
-            <button class="tool" data-tool="ellipse" title="Ellipse"><i data-lucide="circle"></i></button>
-            <button class="tool" data-tool="line" title="Line"><i data-lucide="minus"></i></button>
-            <button class="tool" data-tool="text" title="Text"><i data-lucide="type"></i></button>
-            <button class="tool" data-tool="code" title="Code Snippet"><i data-lucide="code"></i></button>
-            <div class="divider"></div>
-            <button id="btn-undo" title="Undo (Ctrl+Z)"><i data-lucide="undo-2"></i></button>
-            <button id="btn-clear" title="Clear All"><i data-lucide="trash-2"></i></button>
+
+        <!-- Center Tool Panel -->
+        <nav class="main-toolbar">
+            <button class="tool active" data-tool="pen" title="Pen (P)"><i data-lucide="pencil"></i></button>
+            <button class="tool" data-tool="rect" title="Rectangle (R)"><i data-lucide="square"></i></button>
+            <button class="tool" data-tool="ellipse" title="Ellipse (E)"><i data-lucide="circle"></i></button>
+            <button class="tool" data-tool="line" title="Line (L)"><i data-lucide="minus"></i></button>
+            <button class="tool" data-tool="text" title="Text (T)"><i data-lucide="type"></i></button>
+            <button class="tool" data-tool="code" title="Code snippet (C)"><i data-lucide="code"></i></button>
         </nav>
 
-        <div id="room-indicator" class="room-indicator" style="display: none;">
-            Room: <span id="display-room-id"></span>
+        <!-- Bottom Left: History actions -->
+        <div class="action-bar">
+            <button id="btn-undo" title="Undo (Ctrl+Z)"><i data-lucide="undo-2"></i></button>
+            <div class="divider"></div>
+            <button id="btn-clear" title="Clear Canvas"><i data-lucide="trash-2"></i></button>
         </div>
-    </header>
+    </div>
 
-    <main id="canvas-container">
-        <canvas id="whiteboardCanvas"></canvas>
-    </main>
-
-    <!-- Overlay for Code Input -->
+    <!-- Code Input Modal -->
     <div id="code-modal" class="modal">
         <div class="modal-content">
-            <h3>Insert Code Snippet</h3>
-            <textarea id="code-input" placeholder="Paste your code here..."></textarea>
-            <div class="modal-actions">
+            <h3 style="color: var(--accent-color)">Embed Code</h3>
+            <textarea id="code-input" placeholder="// Paste your JS, HTML or CSS here..."></textarea>
+            <div class="modal-btns">
                 <button id="code-cancel">Cancel</button>
-                <button id="code-confirm" class="special">Insert</button>
+                <button id="code-confirm" style="background: var(--accent-color); color: #000">Insert</button>
             </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
-    <script>lucide.createIcons();</script>
+    <script>
+        /** 
+         * APP LOGIC 
+         */
+        const canvas = document.getElementById('whiteboardCanvas');
+        const ctx = canvas.getContext('2d');
+        const btnCreate = document.getElementById('btn-create');
+        const btnUndo = document.getElementById('btn-undo');
+        const btnClear = document.getElementById('btn-clear');
+        const codeModal = document.getElementById('code-modal');
+        const codeInput = document.getElementById('code-input');
+
+        let elements = [];
+        let undoStack = [];
+        let currentTool = 'pen';
+        let isDrawing = false;
+        let startX, startY;
+        let currentElement = null;
+
+        // Init
+        function init() {
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            setupEventListeners();
+            checkUrlParams();
+            render();
+            lucide.createIcons();
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            render();
+        }
+
+        function checkUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('room')) {
+                document.getElementById('room-tag').style.display = 'flex';
+                document.getElementById('display-room-id').innerText = params.get('room');
+            }
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            window.addEventListener('mouseup', stopDrawing);
+
+            // Tools switching
+            document.querySelectorAll('.tool').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tool').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentTool = btn.dataset.tool;
+                });
+            });
+
+            btnCreate.addEventListener('click', createRoom);
+            btnUndo.addEventListener('click', undo);
+            btnClear.addEventListener('click', () => {
+                if (confirm("Reset canvas?")) { elements = []; render(); }
+            });
+
+            // Shortcuts
+            window.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'z') undo();
+                if (e.key === 'p') switchTool('pen');
+                if (e.key === 'r') switchTool('rect');
+            });
+        }
+
+        function switchTool(t) {
+            const btn = document.querySelector(`[data-tool="${t}"]`);
+            if (btn) btn.click();
+        }
+
+        async function createRoom() {
+            try {
+                btnCreate.innerText = "Creating...";
+                const response = await fetch('https://ow.diplapkadel.workers.dev/create-room');
+                const data = await response.json();
+                
+                const newUrl = `${window.location.origin}${window.location.pathname}?room=${data.roomId}&key=${data.key}`;
+                window.history.pushState({}, '', newUrl);
+                
+                document.getElementById('room-tag').style.display = 'flex';
+                document.getElementById('display-room-id').innerText = data.roomId;
+                btnCreate.innerHTML = '<i data-lucide="check"></i> Room Ready';
+                lucide.createIcons();
+            } catch (err) {
+                alert("Worker Error");
+                btnCreate.innerText = "Create Room";
+            }
+        }
+
+        // Drawing Logic
+        function startDrawing(e) {
+            isDrawing = true;
+            startX = e.clientX;
+            startY = e.clientY;
+
+            if (currentTool === 'text') {
+                const txt = prompt("Enter text:");
+                if (txt) elements.push({ type: 'text', x: startX, y: startY, text: txt, color: '#00ff00' });
+                isDrawing = false;
+            } else if (currentTool === 'code') {
+                codeModal.style.display = 'flex';
+                isDrawing = false;
+            } else {
+                currentElement = {
+                    type: currentTool,
+                    x: startX, y: startY,
+                    width: 0, height: 0,
+                    points: [{x: startX, y: startY}],
+                    color: '#00ff00'
+                };
+            }
+            render();
+        }
+
+        function draw(e) {
+            if (!isDrawing || !currentElement) return;
+            const x = e.clientX;
+            const y = e.clientY;
+
+            if (currentTool === 'pen') {
+                currentElement.points.push({x, y});
+            } else {
+                currentElement.width = x - startX;
+                currentElement.height = y - startY;
+            }
+            render();
+            drawElement(currentElement); // preview
+        }
+
+        function stopDrawing() {
+            if (isDrawing && currentElement) {
+                elements.push(currentElement);
+                if (elements.length > 50) elements.shift();
+            }
+            isDrawing = false;
+            currentElement = null;
+            render();
+        }
+
+        function undo() {
+            elements.pop();
+            render();
+        }
+
+        // Rendering logic
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawWatermark();
+            elements.forEach(drawElement);
+        }
+
+        function drawWatermark() {
+            ctx.save();
+            ctx.font = 'bold 70px Inter';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+            ctx.textAlign = 'center';
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.rotate(-Math.PI / 4);
+            ctx.fillText('DiplapSite', 0, 0);
+            ctx.restore();
+        }
+
+        function drawElement(el) {
+            ctx.strokeStyle = el.color;
+            ctx.fillStyle = el.color;
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.beginPath();
+            if (el.type === 'pen') {
+                ctx.moveTo(el.points[0].x, el.points[0].y);
+                el.points.forEach(p => ctx.lineTo(p.x, p.y));
+                ctx.stroke();
+            } else if (el.type === 'rect') {
+                ctx.strokeRect(el.x, el.y, el.width, el.height);
+            } else if (el.type === 'ellipse') {
+                ctx.beginPath();
+                ctx.ellipse(el.x + el.width/2, el.y + el.height/2, Math.abs(el.width/2), Math.abs(el.height/2), 0, 0, Math.PI*2);
+                ctx.stroke();
+            } else if (el.type === 'line') {
+                ctx.moveTo(el.x, el.y);
+                ctx.lineTo(el.x + el.width, el.y + el.height);
+                ctx.stroke();
+            } else if (el.type === 'text') {
+                ctx.font = '20px Inter';
+                ctx.fillText(el.text, el.x, el.y);
+            } else if (el.type === 'code') {
+                ctx.font = '13px "JetBrains Mono"';
+                const lines = el.text.split('\n');
+                ctx.fillStyle = 'rgba(0,255,0,0.08)';
+                ctx.fillRect(el.x - 10, el.y - 20, 350, (lines.length * 18) + 20);
+                ctx.fillStyle = el.color;
+                lines.forEach((l, i) => ctx.fillText(l, el.x, el.y + (i * 18)));
+            }
+        }
+
+        // Modal Events
+        document.getElementById('code-confirm').onclick = () => {
+            if (codeInput.value) {
+                elements.push({ type: 'code', x: startX, y: startY, text: codeInput.value, color: '#00ff00' });
+                render();
+            }
+            codeModal.style.display = 'none';
+            codeInput.value = '';
+        };
+        document.getElementById('code-cancel').onclick = () => codeModal.style.display = 'none';
+
+        init();
+    </script>
 </body>
 </html>
