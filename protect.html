@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unauthorized Domain - Cinema Vakta Protection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cinema-blue: #1E90FF;
+            --vakta-orange: #FF4500;
+            --bg-dark: #050505;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            padding: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(30, 144, 255, 0.2);
+            position: relative;
+        }
+
+        .warning-icon {
+            font-size: 80px;
+            color: var(--vakta-orange);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 48px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--cinema-blue), var(--vakta-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .dev-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid var(--cinema-blue);
+        }
+
+        .dev-info p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #ddd;
+        }
+
+        .dev-info b {
+            color: #fff;
+        }
+
+        .official-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 15px 40px;
+            background-color: var(--cinema-blue);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 18px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(30, 144, 255, 0.3);
+        }
+
+        .official-link:hover {
+            transform: translateY(-5px);
+            background-color: var(--vakta-orange);
+            box-shadow: 0 10px 20px rgba(255, 69, 0, 0.3);
+        }
+
+        .footer-note {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Glitch effect on header */
+        .glitch {
+            position: relative;
+        }
+        
+        .glitch::after {
+            content: "DOMAIN LOCKED";
+            position: absolute;
+            left: 2px;
+            text-shadow: -1px 0 var(--vakta-orange);
+            top: 0;
+            color: white;
+            background: black;
+            overflow: hidden;
+            clip: rect(0,900px,0,0); 
+            animation: noise-anim 2s infinite linear alternate-reverse;
+        }
+
+        @keyframes noise-anim {
+            0% { clip: rect(4px, 9999px, 80px, 0); }
+            100% { clip: rect(12px, 9999px, 20px, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="warning-icon">⚠</div>
+        <h1 class="glitch">Access Denied</h1>
+        
+        <div class="dev-info">
+            <p>This premium cinematic theme is a proprietary development by <b>Subash Samant</b> & <b>Diplap Kadel</b>.</p>
+            <p style="margin-top: 10px;">Unauthorized duplication, distribution, or use on an unlicensed domain is strictly prohibited.</p>
+        </div>
+
+        <p style="color: #888; margin-top: 10px;">This theme is exclusively licensed to:</p>
+        <p style="color: var(--cinema-blue); font-weight: 700; font-size: 22px;">cinemavakta.blogspot.com</p>
+
+        <a href="https://cinemavakta.blogspot.com/" class="official-link">Visit Official Site</a>
+
+        <div class="footer-note">
+            SECURED BY IRON-SHIELD PROTECTION &copy; 2026<br>
+            ALL RIGHTS RESERVED TO THE ORIGINAL DEVELOPERS.
+        </div>
+    </div>
+
+</body>
+</html>
